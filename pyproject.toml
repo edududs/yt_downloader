@@ -1,0 +1,69 @@
+[project]
+name = "yt-downloader"
+version = "0.1.0"
+description = "A modern YouTube downloader CLI with async support"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Eduardo Jesus", email = "dudulj15@gmail.com" }
+]
+maintainers = [
+    { name = "Eduardo Jesus", email = "dudulj15@gmail.com" }
+]
+keywords = ["youtube", "downloader", "cli", "async", "pydantic", "typer"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pytubefix>=6.9.0",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "pydub>=0.25.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[project.scripts]
+yt-downloader = "yt_downloader.main:app"
+
+[project.urls]
+Homepage = "https://github.com/eduardojesus12/yt-downloader"
+Repository = "https://github.com/eduardojesus12/yt-downloader"
+Issues = "https://github.com/eduardojesus12/yt-downloader/issues"
+Changelog = "https://github.com/eduardojesus12/yt-downloader/blob/main/CHANGELOG.md"
+Documentation = "https://eduardojesus12.github.io/yt-downloader/"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--cov=yt_downloader",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-fail-under=10",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.15,<0.9.0"]
+build-backend = "uv_build"
