@@ -33,15 +33,21 @@ This project follows a modular architecture with clear separation of concerns:
 
 ## Installation
 
+### From GitHub (recommended for latest version)
+
 ```bash
-pip install yt-downloader
+# Using pip
+pip install git+https://github.com/edududs/yt_downloader.git
+
+# Using uv (recommended)
+uv add git+https://github.com/edududs/yt_downloader.git
 ```
 
-Or from source:
+### From source (for development)
 
 ```bash
-git clone <repository-url>
-cd yt-downloader
+git clone https://github.com/edududs/yt_downloader.git
+cd yt_downloader
 pip install -e .
 ```
 
@@ -126,9 +132,9 @@ This project uses `uv` for dependency management and `uv_build` for building.
 ### Setup development environment
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/edududs/yt_downloader.git
 cd yt-downloader
-uv sync
+uv sync --dev
 ```
 
 ### Build the package
