@@ -58,11 +58,11 @@ class YouTubeDownloader:
 
         """
         if convert_to_mp3 is None:
-            convert_to_mp3 = settings.audio.convert_to_mp3  # type: ignore[attr-defined]
+            convert_to_mp3 = settings.audio.convert_to_mp3  # pylint: disable=no-member
         if bitrate is None:
-            bitrate = settings.audio.default_bitrate  # type: ignore[attr-defined]
+            bitrate = settings.audio.default_bitrate  # pylint: disable=no-member
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"Starting audio download from: {video_url}")
         yt = YouTube(video_url, on_progress_callback=self.progress_callback)
@@ -120,9 +120,9 @@ class YouTubeDownloader:
 
         """
         if resolution is None:
-            resolution = settings.download.video_resolution  # type: ignore[attr-defined]
+            resolution = settings.download.video_resolution  # pylint: disable=no-member
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"Starting video download from: {video_url}")
         yt = YouTube(video_url, on_progress_callback=self.progress_callback)
@@ -165,11 +165,11 @@ class YouTubeDownloader:
 
         """
         if convert_to_mp3 is None:
-            convert_to_mp3 = settings.audio.convert_to_mp3  # type: ignore[attr-defined]
+            convert_to_mp3 = settings.audio.convert_to_mp3  # pylint: disable=no-member
         if bitrate is None:
-            bitrate = settings.audio.default_bitrate  # type: ignore[attr-defined]
+            bitrate = settings.audio.default_bitrate  # pylint: disable=no-member
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"Starting playlist audio download from: {playlist_url}")
 
@@ -229,9 +229,9 @@ class YouTubeDownloader:
 
         """
         if resolution is None:
-            resolution = settings.download.video_resolution  # type: ignore[attr-defined]
+            resolution = settings.download.video_resolution  # pylint: disable=no-member
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"Starting playlist video download from: {playlist_url}")
 
@@ -310,11 +310,11 @@ class YouTubeDownloader:
 
         """
         if bitrate is None:
-            bitrate = settings.audio.default_bitrate  # type: ignore[attr-defined]
+            bitrate = settings.audio.default_bitrate  # pylint: disable=no-member
         if batch_size is None:
-            batch_size = settings.download.batch_size  # type: ignore[attr-defined]
+            batch_size = settings.download.batch_size  # pylint: disable=no-member
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"🚀 Starting async playlist download from: {playlist_url}")
 
@@ -414,9 +414,9 @@ class YouTubeDownloader:
 
         """
         if bitrate is None:
-            bitrate = settings.audio.default_bitrate  # type: ignore[attr-defined]
+            bitrate = settings.audio.default_bitrate  # pylint: disable=no-member
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"🎵 Starting download & convert event for: {video_url}")
 
@@ -453,7 +453,7 @@ class YouTubeDownloader:
     def _download_audio_only(self, video_url: str, output_path: Path | str | None = None) -> str:
         """Download audio-only stream without conversion (internal helper)."""
         if output_path is None:
-            output_path = settings.download.output_dir  # type: ignore[attr-defined]
+            output_path = settings.download.output_dir  # pylint: disable=no-member
 
         logger.info(f"Downloading audio-only stream from: {video_url}")
         yt = YouTube(video_url, on_progress_callback=self.progress_callback)
