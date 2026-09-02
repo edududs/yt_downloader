@@ -66,8 +66,9 @@ addopts = [
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-# Legado removido na Task 13 — não adicionar nada aqui.
+# "docs" é permanente; as entradas de legado saem na Task 13 — não adicionar mais nada aqui.
 extend-exclude = [
+    "docs",  # markdown: ruff 0.16 formata fences de código dentro de .md
     "src/yt_downloader/audio",
     "src/yt_downloader/commands",
     "src/yt_downloader/services",
