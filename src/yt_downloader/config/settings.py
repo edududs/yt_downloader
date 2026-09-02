@@ -1,55 +1,58 @@
-"""Application settings using Pydantic."""
+"""Application settings (pydantic-settings). Read only by bootstrap and the CLI adapter."""
 
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from yt_downloader.domain.models import Resolution
+
 
 class DownloadSettings(BaseModel):
-    """Settings for download operations."""
+    """Defaults for download commands (CLI flags override)."""
 
     model_config = ConfigDict(frozen=True)
 
-    output_dir: str = Field(default="downloads", description="Default output directory")
-    audio_bitrate: str = Field(default="128k", description="Default audio bitrate")
-    video_resolution: Literal["lowest", "highest"] = Field(
-        default="lowest", description="Default video resolution"
+    output_dir: Path = Field(default=Path("downloads"), description="Default output directory")
+    video_resolution: Resolution = Field(
+        default=Resolution.LOWEST, description="Default resolution"
     )
-    batch_size: int = Field(default=10, description="Default batch size for async operations")
-    timeout: int = Field(default=30, description="Download timeout in seconds")
+    batch_size: int = Field(default=10, ge=1, description="Concurrent downloads in async mode")
 
 
 class AudioSettings(BaseModel):
-    """Settings for audio processing."""
+    """Defaults for audio handling."""
 
     model_config = ConfigDict(frozen=True)
 
-    convert_to_mp3: bool = Field(default=True, description="Auto-convert audio to MP3")
-    default_bitrate: str = Field(default="128k", description="Default MP3 bitrate")
-    ffmpeg_path: str | None = Field(default=None, description="Path to FFmpeg executable")
+    convert_to_mp3: bool = Field(default=True, description="Convert audio-only downloads to MP3")
+    default_bitrate: str = Field(default="128k", description="MP3 bitrate, e.g. '128k'")
+    ffmpeg_path: str = Field(
+        default="ffmpeg", description="ffmpeg executable (name on PATH or absolute)"
+    )
+
+
+class YouTubeSettings(BaseModel):
+    """Which YouTube library backs the provider port."""
+
+    model_config = ConfigDict(frozen=True)
+
+    provider: Literal["pytubefix"] = Field(
+        default="pytubefix", description="YouTube provider adapter"
+    )
 
 
 class Settings(BaseSettings):
-    """Main application settings."""
+    """Root settings. Env prefix YT_DOWNLOADER_, nested with '__'."""
 
     model_config = SettingsConfigDict(
-        env_prefix="YT_DOWNLOADER_",
-        env_nested_delimiter="__",
-        frozen=True,
+        env_prefix="YT_DOWNLOADER_", env_nested_delimiter="__", frozen=True
     )
 
-    # Download settings
     download: DownloadSettings = Field(default_factory=DownloadSettings)
-
-    # Audio settings
     audio: AudioSettings = Field(default_factory=AudioSettings)
-
-    # Application settings
-    app_name: str = Field(default="yt-downloader", description="Application name")
-    version: str = Field(default="0.1.0", description="Application version")
-    debug: bool = Field(default=False, description="Enable debug mode")
-
-
-# Global settings instance
-settings = Settings()
+    youtube: YouTubeSettings = Field(default_factory=YouTubeSettings)
+    app_name: str = Field(default="yt-downloader")
+    version: str = Field(default="0.1.0")
+    debug: bool = Field(default=False)

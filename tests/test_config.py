@@ -1,97 +1,81 @@
-# pylint: disable=no-member
-"""Tests for configuration settings."""
-
 import os
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 from pydantic import ValidationError
 
 from yt_downloader.config.settings import Settings
+from yt_downloader.domain.models import Resolution
 
 
-class TestSettings:
-    """Test cases for Settings class."""
+def test_defaults() -> None:
+    settings = Settings()
+    assert settings.app_name == "yt-downloader"
+    assert settings.debug is False
+    assert settings.download.output_dir == Path("downloads")
+    assert settings.download.video_resolution is Resolution.LOWEST
+    assert settings.download.batch_size == 10
+    assert settings.audio.convert_to_mp3 is True
+    assert settings.audio.default_bitrate == "128k"
+    assert settings.audio.ffmpeg_path == "ffmpeg"
+    assert settings.youtube.provider == "pytubefix"
 
-    def test_default_settings(self):
-        """Test default settings values."""
-        settings = Settings()
 
-        assert settings.app_name == "yt-downloader"
-        assert settings.version == "0.1.0"
-        assert settings.debug is False
+@patch.dict(os.environ, {"YT_DOWNLOADER_DEBUG": "true"})
+def test_env_override_top_level() -> None:
+    assert Settings().debug is True
 
-        assert settings.download.output_dir == "downloads"
-        assert settings.download.audio_bitrate == "128k"
-        assert settings.download.video_resolution == "lowest"
-        assert settings.download.batch_size == 10
-        assert settings.download.timeout == 30
 
-        assert settings.audio.convert_to_mp3 is True
-        assert settings.audio.default_bitrate == "128k"
-        assert settings.audio.ffmpeg_path is None
+@patch.dict(
+    os.environ,
+    {
+        "YT_DOWNLOADER_DOWNLOAD__OUTPUT_DIR": "/custom/path",
+        "YT_DOWNLOADER_DOWNLOAD__VIDEO_RESOLUTION": "highest",
+        "YT_DOWNLOADER_DOWNLOAD__BATCH_SIZE": "20",
+        "YT_DOWNLOADER_AUDIO__CONVERT_TO_MP3": "false",
+        "YT_DOWNLOADER_AUDIO__DEFAULT_BITRATE": "192k",
+        "YT_DOWNLOADER_AUDIO__FFMPEG_PATH": "/opt/ffmpeg",
+        "YT_DOWNLOADER_YOUTUBE__PROVIDER": "pytubefix",
+    },
+)
+def test_env_override_nested() -> None:
+    settings = Settings()
+    assert settings.download.output_dir == Path("/custom/path")
+    assert settings.download.video_resolution is Resolution.HIGHEST
+    assert settings.download.batch_size == 20
+    assert settings.audio.convert_to_mp3 is False
+    assert settings.audio.default_bitrate == "192k"
+    assert settings.audio.ffmpeg_path == "/opt/ffmpeg"
 
-    @patch.dict(os.environ, {"YT_DOWNLOADER_APP_NAME": "custom-downloader"})
-    def test_env_override_app_name(self):
-        """Test environment variable override for app name."""
-        settings = Settings()
-        assert settings.app_name == "custom-downloader"
 
-    @patch.dict(os.environ, {"YT_DOWNLOADER_DEBUG": "true"})
-    def test_env_override_debug(self):
-        """Test environment variable override for debug."""
-        settings = Settings()
-        assert settings.debug is True
+@patch.dict(os.environ, {"YT_DOWNLOADER_DOWNLOAD__VIDEO_RESOLUTION": "4k"})
+def test_invalid_resolution_fails_fast() -> None:
+    with pytest.raises(ValidationError, match="video_resolution"):
+        Settings()
 
-    @patch.dict(os.environ, {"YT_DOWNLOADER_DOWNLOAD__OUTPUT_DIR": "/custom/path"})
-    def test_env_override_download_output_dir(self):
-        """Test environment variable override for download output directory."""
-        settings = Settings()
-        assert settings.download.output_dir == "/custom/path"
 
-    @patch.dict(os.environ, {"YT_DOWNLOADER_DOWNLOAD__VIDEO_RESOLUTION": "highest"})
-    def test_env_override_video_resolution(self):
-        """Test environment variable override for video resolution."""
-        settings = Settings()
-        assert settings.download.video_resolution == "highest"
+@patch.dict(os.environ, {"YT_DOWNLOADER_YOUTUBE__PROVIDER": "yt-dlp"})
+def test_unknown_provider_fails_fast() -> None:
+    with pytest.raises(ValidationError, match="provider"):
+        Settings()
 
-    @patch.dict(os.environ, {"YT_DOWNLOADER_AUDIO__CONVERT_TO_MP3": "false"})
-    def test_env_override_convert_to_mp3(self):
-        """Test environment variable override for MP3 conversion."""
-        settings = Settings()
-        assert settings.audio.convert_to_mp3 is False
 
-    @patch.dict(os.environ, {"YT_DOWNLOADER_AUDIO__DEFAULT_BITRATE": "192k"})
-    def test_env_override_audio_bitrate(self):
-        """Test environment variable override for audio bitrate."""
-        settings = Settings()
-        assert settings.audio.default_bitrate == "192k"
+@patch.dict(os.environ, {"YT_DOWNLOADER_DOWNLOAD__BATCH_SIZE": "0"})
+def test_batch_size_must_be_positive() -> None:
+    with pytest.raises(ValidationError, match="batch_size"):
+        Settings()
 
-    @patch.dict(
-        os.environ,
-        {
-            "YT_DOWNLOADER_DOWNLOAD__BATCH_SIZE": "20",
-            "YT_DOWNLOADER_DOWNLOAD__TIMEOUT": "60",
-        },
-    )
-    def test_env_override_numeric_values(self):
-        """Test environment variable override for numeric values."""
-        settings = Settings()
-        assert settings.download.batch_size == 20
-        assert settings.download.timeout == 60
 
-    def test_invalid_video_resolution(self):
-        """Test invalid video resolution raises validation error."""
-        with pytest.raises(ValueError, match="video_resolution"):
-            Settings(download={"video_resolution": "invalid"})  # pyright: ignore[reportArgumentType]
+def test_removed_fields_are_gone() -> None:
+    settings = Settings()
+    assert not hasattr(settings.download, "audio_bitrate")
+    assert not hasattr(settings.download, "timeout")
 
-    def test_settings_immutability(self):
-        """Test that settings are immutable after creation."""
-        settings = Settings()
 
-        # Should not be able to modify settings directly
-        with pytest.raises(ValidationError):
-            settings.app_name = "new-name"
-
-        with pytest.raises(ValidationError):
-            settings.download.output_dir = "/new/path"
+def test_settings_are_frozen() -> None:
+    settings = Settings()
+    with pytest.raises(ValidationError):
+        settings.debug = True  # type: ignore[misc]  # testing frozen model
+    with pytest.raises(ValidationError):
+        settings.download.batch_size = 1  # type: ignore[misc]  # testing frozen model
