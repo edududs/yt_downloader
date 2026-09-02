@@ -81,7 +81,8 @@ ignore = [
     "D203", "D213",   # conflitam com D211/D212 (convenção google)
     "COM812", "ISC001", # conflitam com o formatter
     "TRY003", "EM101", "EM102", # mensagem inline em `raise X(f"...")` — erros de domínio pequenos não justificam classe por mensagem
-    "D105",  # docstring em dunder (__post_init__, __str__, __enter__) é cerimônia
+    "D105", "D107",  # docstring em dunder/__init__ é cerimônia; a docstring da classe cobre
+    "TC001", "TC002", "TC003",  # imports só-pra-anotação ficam normais; blocos TYPE_CHECKING não pagam em CLI
     "CPY001", # projeto não adota cabeçalho de copyright por arquivo; regra chegou via `select = ["ALL"]` no ruff resolvido (0.16.x), inexistente no floor do brief
 ]
 
@@ -89,7 +90,7 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "D", "ANN", "PLR2004", "SLF001", "ARG", "FBT"]
+"tests/**" = ["S101", "D", "ANN", "PLR2004", "SLF001", "ARG", "FBT", "S603", "S607"]  # S603/S607: subprocess intencional no teste de integração do ffmpeg
 "src/yt_downloader/adapters/outbound/**" = ["BLE001"]  # anti-corruption: adapter captura Exception do vendor e traduz em ProviderError
 "src/yt_downloader/adapters/outbound/audio/ffmpeg_converter.py" = ["S603", "S607"]  # subprocess com argv fixo, sem shell
 "src/yt_downloader/adapters/inbound/cli/app.py" = ["FBT001", "FBT002", "PLR0913"]  # assinatura ditada pelo Typer
