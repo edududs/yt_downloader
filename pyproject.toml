@@ -81,6 +81,7 @@ ignore = [
     "D203", "D213",   # conflitam com D211/D212 (convenção google)
     "COM812", "ISC001", # conflitam com o formatter
     "TRY003", "EM101", "EM102", # mensagem inline em `raise X(f"...")` — erros de domínio pequenos não justificam classe por mensagem
+    "D105",  # docstring em dunder (__post_init__, __str__, __enter__) é cerimônia
     "CPY001", # projeto não adota cabeçalho de copyright por arquivo; regra chegou via `select = ["ALL"]` no ruff resolvido (0.16.x), inexistente no floor do brief
 ]
 
