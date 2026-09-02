@@ -83,7 +83,7 @@ class TestSettings:
     def test_invalid_video_resolution(self):
         """Test invalid video resolution raises validation error."""
         with pytest.raises(ValueError, match="video_resolution"):
-            Settings(download={"video_resolution": "invalid"})
+            Settings(download={"video_resolution": "invalid"})  # pyright: ignore[reportArgumentType]
 
     def test_settings_immutability(self):
         """Test that settings are immutable after creation."""

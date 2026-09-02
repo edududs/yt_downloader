@@ -19,7 +19,7 @@ if __name__ == "__main__":
 from .audio import AudioConverter
 from .commands import PlaylistCommand, VideoCommand
 from .config.settings import settings
-from .services import URLParser
+from .services.parser import URLParser
 
 # Configure logging (will be updated after settings import)
 logging.basicConfig(

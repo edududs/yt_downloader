@@ -4,7 +4,7 @@ import logging
 from typing import Literal
 
 from ..audio import AudioConverter
-from ..services import YouTubeDownloader
+from ..services.downloader import YouTubeDownloader
 
 logger = logging.getLogger(__name__)
 

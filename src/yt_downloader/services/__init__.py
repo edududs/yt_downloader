@@ -1,9 +1,5 @@
-"""Services package for yt-downloader.
+"""Legacy services package (replaced in Task 13)."""
 
-This package contains the core business logic for downloading videos and playlists.
-"""
-
-from .downloader import YouTubeDownloader
 from .parser import URLParser
 
-__all__ = ["URLParser", "YouTubeDownloader"]
+__all__ = ["URLParser"]

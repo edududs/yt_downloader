@@ -4,12 +4,8 @@ version = "0.1.0"
 description = "A modern YouTube downloader CLI with async support"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [
-    { name = "Eduardo Jesus", email = "dudulj15@gmail.com" }
-]
-maintainers = [
-    { name = "Eduardo Jesus", email = "dudulj15@gmail.com" }
-]
+authors = [{ name = "Eduardo Jesus", email = "dudulj15@gmail.com" }]
+maintainers = [{ name = "Eduardo Jesus", email = "dudulj15@gmail.com" }]
 keywords = ["youtube", "downloader", "cli", "async", "pydantic", "typer"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -18,29 +14,29 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Video",
     "Topic :: Utilities",
 ]
 requires-python = ">=3.12"
+# Floors = versões resolvidas por `uv lock --upgrade` em 2026-09-01. Ajustar se o Step 4 mostrar outra.
 dependencies = [
-    "pytubefix>=6.9.0",
-    "typer>=0.12.0",
-    "rich>=13.7.0",
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    "pydub>=0.25.1",
+    "pytubefix>=10.11.0",
+    "typer>=0.27.0",
+    "rich>=15.0.0",
+    "pydantic>=2.13.0",
+    "pydantic-settings>=2.15.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
-    "pytest-asyncio>=0.23.0",
+    "pytest>=9.1.0",
+    "pytest-cov>=7.1.0",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.14.0",
+    "pyright>=1.1.400",
 ]
-docs = [
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-]
+docs = ["mkdocs>=1.5.0", "mkdocs-material>=9.0.0"]
 
 [project.scripts]
 yt-downloader = "yt_downloader.main:app"
@@ -52,18 +48,60 @@ Issues = "https://github.com/eduardojesus12/yt-downloader/issues"
 Changelog = "https://github.com/eduardojesus12/yt-downloader/blob/main/CHANGELOG.md"
 Documentation = "https://eduardojesus12.github.io/yt-downloader/"
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = [
-    "--cov=yt_downloader",
-    "--cov-report=html",
-    "--cov-report=term-missing",
-    "--cov-fail-under=10",
-]
-
 [build-system]
 requires = ["uv_build>=0.8.15,<0.9.0"]
 build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = ["integration: hits the network or needs a real ffmpeg; skipped by default"]
+addopts = [
+    "--cov=yt_downloader",
+    "--cov-report=term-missing",
+    "--cov-fail-under=0",   # gate real definido na Task 14 após medição
+    "-m", "not integration",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Legado removido na Task 13 — não adicionar nada aqui.
+extend-exclude = [
+    "src/yt_downloader/audio",
+    "src/yt_downloader/commands",
+    "src/yt_downloader/services",
+    "src/yt_downloader/main.py",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D203", "D213",   # conflitam com D211/D212 (convenção google)
+    "COM812", "ISC001", # conflitam com o formatter
+    "TRY003", "EM101", "EM102", # mensagem inline em `raise X(f"...")` — erros de domínio pequenos não justificam classe por mensagem
+    "CPY001", # projeto não adota cabeçalho de copyright por arquivo; regra chegou via `select = ["ALL"]` no ruff resolvido (0.16.x), inexistente no floor do brief
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "D", "ANN", "PLR2004", "SLF001", "ARG", "FBT"]
+"src/yt_downloader/adapters/outbound/**" = ["BLE001"]  # anti-corruption: adapter captura Exception do vendor e traduz em ProviderError
+"src/yt_downloader/adapters/outbound/audio/ffmpeg_converter.py" = ["S603", "S607"]  # subprocess com argv fixo, sem shell
+"src/yt_downloader/adapters/inbound/cli/app.py" = ["FBT001", "FBT002", "PLR0913"]  # assinatura ditada pelo Typer
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [
+    "src/yt_downloader/audio",
+    "src/yt_downloader/commands",
+    "src/yt_downloader/services",
+    "src/yt_downloader/main.py",
+]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+strict = ["src"]
+venvPath = "."
+venv = ".venv"
