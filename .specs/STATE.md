@@ -8,11 +8,12 @@
 - AD-004 (2026-09-02): pyright `standard` globally, `strict = ["src"]` — plan test code uses unannotated fixtures.
 - AD-005 (2026-09-02): `docs/` excluded from ruff — ruff 0.16 formats code fences inside markdown.
 
-## Handoff (2026-09-03 — feature complete, verified, PR open)
+## Handoff (2026-09-03 — hexagonal-refactor MERGED into main, scope closed)
 
-- Status: Tasks 1–14 done. Verifier PASS (`features/hexagonal-refactor/validation.md`): 50/50 criteria, 4/4 mutants killed; its 3 spec-precision gaps closed by extra CLI tests. Suite 91 passed + 2 integration; coverage 95.8% (gate 90); ruff/pyright clean; manual smoke (real download → mp3) OK.
-- Lessons: L-001, L-002 (candidates) in `LESSONS.md`.
-- Next: review/merge the PR on GitHub. After merge, delete the worktree `.claude/worktrees/hexagonal-refactor`.
+- PR #1 merged (`d47cccf`); branch and worktree deleted. Codex review raised two valid findings (lazy `YouTube.streams` outside the vendor guard; `--batch-size 0` swallowed by `or`), both fixed in `f90541a` with regression tests (AC-07.6, AC-12.8).
+- Final state: 96 tests + 2 integration passing; coverage 96.5% (gate 90); ruff/pyright clean.
+- Verifier PASS (`features/hexagonal-refactor/validation.md`, pre-review-fix range). Lessons: L-001, L-002 (candidates) in `LESSONS.md`.
+- No work in flight. Next feature starts with a new `.specs/features/<name>/spec.md`.
 
 ### Previous handoff (2026-09-02, kept for history)
 
