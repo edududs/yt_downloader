@@ -1,54 +1,29 @@
 # yt-downloader
 
-A modular, scalable YouTube video and audio downloader built with Python and pytubefix. Features clean architecture with support for playlists, async downloads, and automatic MP3 conversion.
+A YouTube video and audio downloader CLI built with Python, pytubefix, Typer and Rich. Hexagonal architecture (ports & adapters): the YouTube library, the audio converter, the filesystem and the progress display are all swappable adapters behind small ports.
 
-## ✅ Status
+## Features
 
-- ✅ Modular architecture with clear separation of concerns
-- ✅ Pydantic-based configuration system
-- ✅ CLI with Typer and Rich
-- ✅ URL parsing and validation
-- ✅ Audio conversion with pydub
-- ✅ Unit tests with pytest
-- ✅ Package build and installation
-- ✅ Async download support (implemented)
-- ✅ Observer pattern for audio events (implemented)
+- Download a single video (lowest/highest progressive resolution) or its audio only
+- Convert audio to MP3 via **ffmpeg** at a chosen bitrate
+- Download whole playlists with bounded concurrency and live progress bars
+- Live Rich progress: one bar per download plus an overall playlist bar, log lines per stage
+- Configuration via environment variables (pydantic-settings)
+- Fully typed (`pyright` strict on `src/`), linted with `ruff` (`select = ["ALL"]`)
 
-## 🚧 Work in Progress
+## Requirements
 
-- Integration tests for full download workflows
-- Playlist download functionality testing
-- Performance optimization
-- Error handling improvements
-
-## Architecture
-
-This project follows a modular architecture with clear separation of concerns:
-
-- **config/**: Configuration management using Pydantic
-- **services/**: Core business logic (downloading, URL parsing)
-- **commands/**: CLI command implementations (Command pattern)
-- **audio/**: Audio processing and conversion (Observer pattern)
-- **tests/**: Unit and integration tests
+- Python >= 3.12
+- **ffmpeg** on `PATH` (or set `YT_DOWNLOADER_AUDIO__FFMPEG_PATH`) — needed only for MP3 conversion
 
 ## Installation
 
-### From GitHub (recommended for latest version)
-
 ```bash
-# Using pip
-pip install git+https://github.com/edududs/yt_downloader.git
-
 # Using uv (recommended)
 uv add git+https://github.com/edududs/yt_downloader.git
-```
 
-### From source (for development)
-
-```bash
-git clone https://github.com/edududs/yt_downloader.git
-cd yt_downloader
-pip install -e .
+# Using pip
+pip install git+https://github.com/edududs/yt_downloader.git
 ```
 
 ## Usage
@@ -56,106 +31,109 @@ pip install -e .
 ### Download a single video
 
 ```bash
-# Download video (highest resolution)
+# Default resolution comes from settings (lowest)
 yt-downloader download-video "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# Download video (lowest resolution)
-yt-downloader download-video --resolution lowest "https://www.youtube.com/watch?v=VIDEO_ID"
+# Explicit resolution (lowest | highest)
+yt-downloader download-video --resolution highest "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# Download to specific directory
+# Download to a specific directory
 yt-downloader download-video -o ./downloads "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-### Download audio from video
+### Download audio from a video
 
 ```bash
-# Download audio and convert to MP3 (default)
+# Audio only, converted to MP3 (default)
 yt-downloader download-video --audio-only "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# Download audio without conversion
+# Keep the original audio container, no conversion
 yt-downloader download-video --audio-only --no-mp3 "https://www.youtube.com/watch?v=VIDEO_ID"
 
 # Custom bitrate
 yt-downloader download-video --audio-only --bitrate 192k "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-### Download playlist
+### Download a playlist
 
 ```bash
-# Download playlist audio (async by default)
+# Playlist audio as MP3, concurrent (default)
 yt-downloader download-playlist "https://www.youtube.com/playlist?list=PLAYLIST_ID"
 
-# Download playlist videos
+# Playlist videos
 yt-downloader download-playlist --no-audio-only "https://www.youtube.com/playlist?list=PLAYLIST_ID"
 
-# Synchronous download
+# Sequential download
 yt-downloader download-playlist --no-async "https://www.youtube.com/playlist?list=PLAYLIST_ID"
+
+# Concurrency (async mode)
+yt-downloader download-playlist --batch-size 5 "https://www.youtube.com/playlist?list=PLAYLIST_ID"
 ```
 
-### Get URL information
+Playlist downloads never abort on a single failed video: failures are listed at the end. The command exits with code 1 only when nothing could be downloaded.
+
+### Inspect a URL
 
 ```bash
 yt-downloader info "https://www.youtube.com/watch?v=VIDEO_ID"
 yt-downloader info "https://www.youtube.com/playlist?list=PLAYLIST_ID"
 ```
 
-## Features
-
-- **Modular Architecture**: Clean separation of concerns with packages for config, services, commands, and audio
-- **Async Downloads**: High-performance playlist downloads with configurable batch sizes
-- **Audio Conversion**: Automatic MP3 conversion using FFmpeg with Observer pattern
-- **Rich CLI**: Beautiful command-line interface with progress indicators
-- **Configuration**: Flexible settings using Pydantic with environment variable support
-- **Error Handling**: Robust error handling with detailed logging
-- **Type Safety**: Full type hints and Pydantic validation
-
 ## Configuration
 
-Configure the application using environment variables:
+Environment variables (prefix `YT_DOWNLOADER_`, nested with `__`). CLI flags always win over settings.
 
 ```bash
-export YT_DOWNLOADER_DOWNLOAD__OUTPUT_DIR="/path/to/downloads"
+export YT_DOWNLOADER_DOWNLOAD__OUTPUT_DIR="/path/to/downloads"   # default: downloads
+export YT_DOWNLOADER_DOWNLOAD__VIDEO_RESOLUTION=highest           # lowest | highest
+export YT_DOWNLOADER_DOWNLOAD__BATCH_SIZE=20                      # concurrent playlist downloads
+export YT_DOWNLOADER_AUDIO__CONVERT_TO_MP3=true
 export YT_DOWNLOADER_AUDIO__DEFAULT_BITRATE="192k"
-export YT_DOWNLOADER_DOWNLOAD__BATCH_SIZE=20
+export YT_DOWNLOADER_AUDIO__FFMPEG_PATH="/opt/ffmpeg/bin/ffmpeg"  # default: ffmpeg (on PATH)
+export YT_DOWNLOADER_YOUTUBE__PROVIDER=pytubefix                  # only provider today
 export YT_DOWNLOADER_DEBUG=true
 ```
 
-## Requirements
+## Architecture
 
-- Python >= 3.12
-- pytubefix >= 6.9.0
+```
+src/yt_downloader/
+├── domain/        models (frozen), errors, url_parser — no dependencies
+├── application/
+│   ├── ports/     Protocols: YouTubeProviderPort, AudioConverterPort, FilesystemPort, ProgressReporterPort
+│   └── use_cases/ DownloadMediaUseCase, DownloadPlaylistUseCase
+├── adapters/
+│   ├── inbound/cli/     Typer app, presenters, logging
+│   └── outbound/        youtube/pytubefix_provider + registry, audio/ffmpeg_converter,
+│                        filesystem/local, progress/rich_reporter
+├── bootstrap/     container.py — the only place that names concrete adapters
+└── config/        pydantic-settings
+```
+
+Rules: adapters implement ports; use cases know only ports and `DomainError`; every vendor exception is translated at the adapter boundary. Swapping the YouTube library means one adapter module plus one entry in `adapters/outbound/youtube/registry.py`.
 
 ## Development
 
-This project uses `uv` for dependency management and `uv_build` for building.
-
-### Setup development environment
-
 ```bash
 git clone https://github.com/edududs/yt_downloader.git
-cd yt-downloader
-uv sync --dev
+cd yt_downloader
+uv sync            # installs the dev group (pytest, ruff, pyright)
 ```
 
-### Build the package
+Quality gate (run before every commit):
+
+```bash
+uv run ruff format . && uv run ruff check . && uv run pyright && uv run pytest
+```
+
+Integration tests (real ffmpeg, real network) are skipped by default:
+
+```bash
+uv run pytest -m integration
+```
+
+Build the package:
 
 ```bash
 uv build
 ```
-
-### Run tests
-
-```bash
-uv run pytest
-```
-
-## Design Patterns
-
-This project implements several software design patterns:
-
-- **Command Pattern**: CLI commands are encapsulated objects
-- **Observer Pattern**: Audio conversion is triggered by download events
-- **Strategy Pattern**: Sync/async download strategies
-- **Facade Pattern**: Each package exposes a simplified interface
-- **Factory Pattern**: Component initialization through configuration
-

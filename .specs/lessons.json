@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 3,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "spec_precision_gap::when an ac says per command or per route parametrize the test over every command instead of covering the first one",
+      "text": "When an AC says 'per command' or 'per route', parametrize the test over every command instead of covering the first one.",
+      "signal": "spec_precision_gap",
+      "scope": "tests/cli",
+      "status": "candidate",
+      "features": [
+        "hexagonal-refactor"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC-12.5 / tests/test_cli.py:157 (tests/cli)"
+      ],
+      "created": "2026-09-03T12:05:58Z",
+      "last_seen": "2026-09-03T12:05:58Z"
+    },
+    {
+      "id": "L-002",
+      "key": "spec_precision_gap::a cli fixture that pre fills settings hides flags every flag the spec preserves needs one explicit invocation test",
+      "text": "A CLI fixture that pre-fills settings hides flags; every flag the spec preserves needs one explicit invocation test.",
+      "signal": "spec_precision_gap",
+      "scope": "tests/cli",
+      "status": "candidate",
+      "features": [
+        "hexagonal-refactor"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "GC-5 / tests/test_cli.py fixture (tests/cli)"
+      ],
+      "created": "2026-09-03T12:05:58Z",
+      "last_seen": "2026-09-03T12:05:58Z"
+    }
+  ]
+}
