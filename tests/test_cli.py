@@ -154,9 +154,39 @@ def test_output_is_safe_on_cp1252_console(
     assert batch.exit_code == 0
 
 
-def test_progress_session_is_opened_and_closed(container: Container) -> None:
-    runner.invoke(app, ["download-video", VIDEO_URL], obj=container)
+@pytest.mark.parametrize(
+    "args", [["download-video", VIDEO_URL], ["download-playlist", PLAYLIST_URL]]
+)
+def test_progress_session_is_opened_and_closed_once_per_command(
+    container: Container, args: list[str]
+) -> None:
+    result = runner.invoke(app, args, obj=container)
+    assert result.exit_code == 0, result.output
     progress = container.progress
     assert isinstance(progress, RecordingProgress)
     assert progress.entered == 1
     assert progress.exited == 1
+
+
+def test_output_flag_overrides_settings_dir(container: Container, tmp_path: Path) -> None:
+    custom = tmp_path / "custom"
+    result = runner.invoke(app, ["download-video", "-o", str(custom), VIDEO_URL], obj=container)
+    assert result.exit_code == 0, result.output
+    assert (custom / "dQw4w9WgXcQ.mp4").exists()
+    assert str(custom.resolve()) in result.output
+
+
+def test_batch_size_flag_bounds_concurrency(
+    container: Container, youtube: FakeYouTubeProvider
+) -> None:
+    youtube.work_seconds = 0.01
+    result = runner.invoke(
+        app, ["download-playlist", "--batch-size", "1", PLAYLIST_URL], obj=container
+    )
+    assert result.exit_code == 0, result.output
+    assert youtube.peak_concurrency == 1
+
+
+def test_debug_flag_is_accepted(container: Container) -> None:
+    result = runner.invoke(app, ["--debug", "info", VIDEO_URL], obj=container)
+    assert result.exit_code == 0, result.output
