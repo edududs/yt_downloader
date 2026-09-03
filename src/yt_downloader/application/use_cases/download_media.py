@@ -71,7 +71,7 @@ class DownloadMediaUseCase:
         if not isinstance(media, AudioDownload) or media.mp3_bitrate is None:
             return downloaded
         self._progress.update(
-            task, description=f"Converting {downloaded.title} → mp3 ({media.mp3_bitrate})"
+            task, description=f"Converting {downloaded.title} -> mp3 ({media.mp3_bitrate})"
         )
         mp3 = self._converter.to_mp3(downloaded.path, dest, media.mp3_bitrate)
         self._fs.delete(downloaded.path)
