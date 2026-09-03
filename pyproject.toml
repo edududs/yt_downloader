@@ -59,7 +59,7 @@ markers = ["integration: hits the network or needs a real ffmpeg; skipped by def
 addopts = [
     "--cov=yt_downloader",
     "--cov-report=term-missing",
-    "--cov-fail-under=0",   # gate real definido na Task 14 após medição
+    "--cov-fail-under=90",  # medido 96% em 2026-09-03 (Task 14); gate = medido − 5, arredondado p/ múltiplo de 5
     "-m", "not integration",
 ]
 

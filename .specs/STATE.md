@@ -8,8 +8,26 @@
 - AD-004 (2026-09-02): pyright `standard` globally, `strict = ["src"]` — plan test code uses unannotated fixtures.
 - AD-005 (2026-09-02): `docs/` excluded from ruff — ruff 0.16 formats code fences inside markdown.
 
-## Handoff
+## Handoff (2026-09-03 — all 14 tasks implemented; verifier + PR pending)
 
-- Feature: hexagonal-refactor — branch `refactor/hexagonal-architecture` (worktree `.claude/worktrees/hexagonal-refactor`)
-- Done: Task 1 (a7e3294). SDD ledger for Task 1 at `.superpowers/sdd/2026-09-02-hexagonal-refactor/progress.md` (git-ignored).
-- Next: Task 2 (domain models) — see `.specs/features/hexagonal-refactor/tasks.md`.
+- Status: Tasks 1–14 done and committed (see tasks.md). Suite 87 passed + 2 integration; coverage 95.8% (gate 90); ruff/pyright clean; manual smoke (real download → mp3) OK.
+- Remaining: (1) tlc Verifier pass → `validation.md`; (2) push `refactor/hexagonal-architecture` and open PR via `gh` (user requested; no AI attribution).
+
+### Previous handoff (2026-09-02, kept for history)
+
+- Feature: hexagonal-refactor — branch `refactor/hexagonal-architecture`, worktree `D:/Projects/yt-downloader/.claude/worktrees/hexagonal-refactor` (**keep the worktree on exit — it holds uncommitted work**).
+- Completed & committed: Tasks 1–11 (a7e3294 … e685493). Last commit: `e685493 feat(application): DownloadPlaylistUseCase with bounded concurrency`. Suite at that commit: 72 passed + 2 integration (ffmpeg real, pytubefix 10.11 real) passed separately; ruff/pyright clean.
+- In progress (Task 12 + 13, **uncommitted, gate NOT yet run**):
+  - New: `src/yt_downloader/bootstrap/{__init__,container}.py`, `src/yt_downloader/adapters/inbound/{__init__.py,cli/__init__.py,cli/app.py,cli/presenters.py,cli/logging_setup.py}`, `tests/test_container.py`, `tests/test_cli.py` (RED confirmed: collection errors before impl).
+  - Modified: `src/yt_downloader/main.py` (thin entry), `pyproject.toml` (legacy `extend-exclude`/pyright `exclude` removed), `.specs/features/hexagonal-refactor/tasks.md`.
+  - Staged deletions: `src/yt_downloader/{audio,commands,services}/` (git rm done).
+- Next step, in order:
+  1. `uv run ruff format . && uv run ruff check . && uv run pyright && uv run pytest -q` — expect 86 passed (72 + 1 container + 13 cli). Fix lint/type findings only (no test changes).
+  2. Guardrail greps (plan Task 13 Step 5): no `pytubefix` import outside `adapters/outbound/youtube/`; no `subprocess` outside `adapters/outbound/audio/`; no `config.settings` import outside bootstrap / cli / registry.
+  3. Manual smoke (network): `uv run yt-downloader info <url>` and `uv run yt-downloader download-video --audio-only -o ./tmp-smoke <url>`; delete `./tmp-smoke`.
+  4. Commit T12 (`bootstrap/` + `tests/test_container.py`: "feat(bootstrap): composition root"), then T13 (everything else: "feat(cli): skinny Typer adapter over use cases; remove legacy services/commands/audio" with BREAKING notes from plan). Mark 12/13 ✅ in tasks.md.
+  5. Task 14: measure coverage → set `--cov-fail-under` = measured − 5 (rounded down to multiple of 5); README/CHANGELOG/CONTRIBUTING per plan §Task 14; commit "docs: …".
+  6. Verifier (tlc `validate.md`, fresh sub-agent or standalone fresh-eyes pass) → `.specs/features/hexagonal-refactor/validation.md`.
+  7. Push branch and open PR with `gh` (user requested a PR; no AI attribution in commits/PR body). Do NOT push before the user says go.
+- Blockers: none. Known: pyright `strict=["src"]` ignores per-rule config overrides → the pytubefix module uses a file-level `# pyright: reportMissingTypeStubs=false`.
+- Plan doc (task bodies + code): `docs/plans/2026-09-02-hexagonal-refactor.md`. Spec IDs: `.specs/features/hexagonal-refactor/spec.md`.

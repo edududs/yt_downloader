@@ -15,19 +15,19 @@ Every task ends with the **build** gate (project rule GC-4), then one atomic com
 | # | Task | REQ | Depends on | Gate | Status |
 |---|------|-----|------------|------|--------|
 | 1 | Toolchain, harness, deps | GC | — | build | ✅ a7e3294 |
-| 2 | Domain errors + models | REQ-01 | 1 | build | ⬜ |
-| 3 | Domain url_parser | REQ-02 | 2 | build | ⬜ |
-| 4 | Ports + fakes | REQ-03 | 2 | build (pyright is the test) | ⬜ |
-| 5 | LocalFilesystem | REQ-04 | 4 | build | ⬜ |
-| 6 | FfmpegConverter | REQ-05 | 4 | build + integration | ⬜ |
-| 7 | RichProgressReporter | REQ-06 | 4 | build | ⬜ |
-| 8 | PytubefixProvider | REQ-07 | 3, 4 | build + integration | ⬜ |
-| 9 | Settings + registry | REQ-08 | 2, 8 | build | ⬜ |
-| 10 | DownloadMediaUseCase | REQ-09 | 4 | build | ⬜ |
-| 11 | DownloadPlaylistUseCase | REQ-10 | 10 | build | ⬜ |
-| 12 | Container | REQ-11 | 5–11 | build | ⬜ |
-| 13 | CLI + main + delete legacy | REQ-12 | 12 | build + greps + manual smoke | ⬜ |
-| 14 | Coverage gate + docs | REQ-13 | 13 | build | ⬜ |
+| 2 | Domain errors + models | REQ-01 | 1 | build | ✅ |
+| 3 | Domain url_parser | REQ-02 | 2 | build | ✅ |
+| 4 | Ports + fakes | REQ-03 | 2 | build (pyright is the test) | ✅ |
+| 5 | LocalFilesystem | REQ-04 | 4 | build | ✅ |
+| 6 | FfmpegConverter | REQ-05 | 4 | build + integration | ✅ |
+| 7 | RichProgressReporter | REQ-06 | 4 | build | ✅ |
+| 8 | PytubefixProvider | REQ-07 | 3, 4 | build + integration | ✅ |
+| 9 | Settings + registry | REQ-08 | 2, 8 | build | ✅ |
+| 10 | DownloadMediaUseCase | REQ-09 | 4 | build | ✅ |
+| 11 | DownloadPlaylistUseCase | REQ-10 | 10 | build | ✅ |
+| 12 | Container | REQ-11 | 5–11 | build | ✅ |
+| 13 | CLI + main + delete legacy | REQ-12 | 12 | build + greps + manual smoke | ✅ (+AC-12.7 cp1252 fix) |
+| 14 | Coverage gate + docs | REQ-13 | 13 | build | ✅ (measured 96% → gate 90) |
 
 ## Test Coverage Matrix
 
