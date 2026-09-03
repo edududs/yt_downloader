@@ -66,13 +66,8 @@ addopts = [
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-# "docs" é permanente; as entradas de legado saem na Task 13 — não adicionar mais nada aqui.
 extend-exclude = [
     "docs",  # markdown: ruff 0.16 formata fences de código dentro de .md
-    "src/yt_downloader/audio",
-    "src/yt_downloader/commands",
-    "src/yt_downloader/services",
-    "src/yt_downloader/main.py",
 ]
 
 [tool.ruff.lint]
@@ -93,16 +88,10 @@ convention = "google"
 "tests/**" = ["S101", "D", "ANN", "PLR2004", "SLF001", "ARG", "FBT", "S603", "S607"]  # S603/S607: subprocess intencional no teste de integração do ffmpeg
 "src/yt_downloader/adapters/outbound/**" = ["BLE001"]  # anti-corruption: adapter captura Exception do vendor e traduz em ProviderError
 "src/yt_downloader/adapters/outbound/audio/ffmpeg_converter.py" = ["S603", "S607"]  # subprocess com argv fixo, sem shell
-"src/yt_downloader/adapters/inbound/cli/app.py" = ["FBT001", "FBT002", "PLR0913"]  # assinatura ditada pelo Typer
+"src/yt_downloader/adapters/inbound/cli/app.py" = ["FBT001", "FBT002", "PLR0913", "PLR0917"]  # assinatura ditada pelo Typer
 
 [tool.pyright]
 include = ["src", "tests"]
-exclude = [
-    "src/yt_downloader/audio",
-    "src/yt_downloader/commands",
-    "src/yt_downloader/services",
-    "src/yt_downloader/main.py",
-]
 pythonVersion = "3.12"
 typeCheckingMode = "standard"
 strict = ["src"]

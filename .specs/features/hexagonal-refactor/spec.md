@@ -83,6 +83,7 @@ Source of truth for contracts, rationale and file layout: `docs/plans/2026-09-02
 - AC-12.4 `download-playlist` default audio+async, prints "N/N"; `--no-async` → peak concurrency 1; partial failure exit 0 listing failed ids; total failure exit 1.
 - AC-12.5 Progress session entered and exited exactly once per command.
 - AC-12.6 Legacy `audio/ commands/ services/` deleted; ruff/pyright legacy excludes removed; GC-1..3 greps empty.
+- AC-12.7 Presenter output is encodable on a strict cp1252 console (Windows without UTF-8): `download-video` and `download-playlist` (with one failure) finish with exit 0 and no exception. (Found in manual smoke: `✅` raised UnicodeEncodeError.)
 
 ### REQ-13 Closure (Task 14)
 - AC-13.1 `--cov-fail-under` = measured − 5 (rounded down to multiple of 5).
