@@ -8,10 +8,11 @@
 - AD-004 (2026-09-02): pyright `standard` globally, `strict = ["src"]` — plan test code uses unannotated fixtures.
 - AD-005 (2026-09-02): `docs/` excluded from ruff — ruff 0.16 formats code fences inside markdown.
 
-## Handoff (2026-09-03 — all 14 tasks implemented; verifier + PR pending)
+## Handoff (2026-09-03 — feature complete, verified, PR open)
 
-- Status: Tasks 1–14 done and committed (see tasks.md). Suite 87 passed + 2 integration; coverage 95.8% (gate 90); ruff/pyright clean; manual smoke (real download → mp3) OK.
-- Remaining: (1) tlc Verifier pass → `validation.md`; (2) push `refactor/hexagonal-architecture` and open PR via `gh` (user requested; no AI attribution).
+- Status: Tasks 1–14 done. Verifier PASS (`features/hexagonal-refactor/validation.md`): 50/50 criteria, 4/4 mutants killed; its 3 spec-precision gaps closed by extra CLI tests. Suite 91 passed + 2 integration; coverage 95.8% (gate 90); ruff/pyright clean; manual smoke (real download → mp3) OK.
+- Lessons: L-001, L-002 (candidates) in `LESSONS.md`.
+- Next: review/merge the PR on GitHub. After merge, delete the worktree `.claude/worktrees/hexagonal-refactor`.
 
 ### Previous handoff (2026-09-02, kept for history)
 
