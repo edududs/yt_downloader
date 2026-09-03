@@ -30,6 +30,19 @@ def _guard[T](action: Callable[[], T], ref: VideoRef | PlaylistRef) -> T:
         raise ProviderError(f"pytubefix failed for {ref.id}: {exc}") from exc
 
 
+def _pick_audio(yt: YouTube) -> Stream | None:
+    return yt.streams.get_audio_only()
+
+
+def _pick_lowest(yt: YouTube) -> Stream | None:
+    return yt.streams.get_lowest_resolution()
+
+
+def _pick_highest(yt: YouTube) -> Stream | None:
+    # pytubefix leaves `mime_type` unannotated on this getter; the call itself is typed.
+    return yt.streams.get_highest_resolution()  # pyright: ignore[reportUnknownMemberType]
+
+
 class PytubefixProvider:
     """pytubefix adapter. One YouTube object per download so each has its own hook."""
 
@@ -51,21 +64,15 @@ class PytubefixProvider:
     ) -> DownloadedFile:
         """Download the audio-only stream."""
         yt = self._open(ref, on_progress)
-        return self._download(yt, ref, dest_dir, yt.streams.get_audio_only)
+        return self._download(yt, ref, dest_dir, _pick_audio)
 
     def download_video(
         self, ref: VideoRef, resolution: Resolution, dest_dir: Path, on_progress: ProgressCallback
     ) -> DownloadedFile:
         """Download the progressive video stream at the requested resolution."""
         yt = self._open(ref, on_progress)
-        if resolution is Resolution.LOWEST:
-            return self._download(yt, ref, dest_dir, yt.streams.get_lowest_resolution)
-
-        def pick_highest() -> Stream | None:
-            # pytubefix leaves `mime_type` unannotated on this getter; the call itself is typed.
-            return yt.streams.get_highest_resolution()  # pyright: ignore[reportUnknownMemberType]
-
-        return self._download(yt, ref, dest_dir, pick_highest)
+        picker = _pick_lowest if resolution is Resolution.LOWEST else _pick_highest
+        return self._download(yt, ref, dest_dir, picker)
 
     @staticmethod
     def _open(ref: VideoRef, on_progress: ProgressCallback) -> YouTube:
@@ -76,9 +83,10 @@ class PytubefixProvider:
 
     @staticmethod
     def _download(
-        yt: YouTube, ref: VideoRef, dest_dir: Path, pick: Callable[[], Stream | None]
+        yt: YouTube, ref: VideoRef, dest_dir: Path, pick: Callable[[YouTube], Stream | None]
     ) -> DownloadedFile:
-        stream = _guard(pick, ref)
+        # `yt.streams` is a lazy property that fetches (and may raise): evaluate inside the guard.
+        stream = _guard(lambda: pick(yt), ref)
         if stream is None:
             raise StreamUnavailableError(f"No matching stream for {ref.id}")
         path: str | None = _guard(lambda: stream.download(output_path=str(dest_dir)), ref)

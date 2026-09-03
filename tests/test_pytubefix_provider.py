@@ -45,6 +45,7 @@ class _FakeYouTube:
     instances: ClassVar[list["_FakeYouTube"]] = []
     stream: ClassVar[_FakeStream | None] = _FakeStream()
     raise_on_init: ClassVar[Exception | None] = None
+    raise_on_streams: ClassVar[Exception | None] = None
 
     def __init__(
         self, url: str, on_progress_callback: Callable[[_FakeStream, bytes, int], None]
@@ -54,8 +55,15 @@ class _FakeYouTube:
         self.url = url
         self.hook = on_progress_callback
         self.title = "Fake Title"
-        self.streams = _FakeStreams(self.stream)
+        self._streams = _FakeStreams(self.stream)
         _FakeYouTube.instances.append(self)
+
+    @property
+    def streams(self) -> _FakeStreams:
+        """Lazy like pytubefix: the real property fetches and may raise."""
+        if self.raise_on_streams:
+            raise self.raise_on_streams
+        return self._streams
 
 
 class _FakePlaylist:
@@ -73,6 +81,7 @@ def _patch_vendor(monkeypatch: pytest.MonkeyPatch) -> None:
     _FakeYouTube.instances = []
     _FakeYouTube.stream = _FakeStream()
     _FakeYouTube.raise_on_init = None
+    _FakeYouTube.raise_on_streams = None
     monkeypatch.setattr(pytubefix_provider, "YouTube", _FakeYouTube)
     monkeypatch.setattr(pytubefix_provider, "Playlist", _FakePlaylist)
 
@@ -114,6 +123,27 @@ def test_vendor_exception_is_translated(tmp_path: Path) -> None:
     _FakeYouTube.raise_on_init = RuntimeError("bot detected")
     with pytest.raises(ProviderError, match="bot detected"):
         PytubefixProvider().download_audio(REF, tmp_path, lambda _d, _t: None)
+
+
+def _audio(provider: PytubefixProvider, dest: Path) -> None:
+    provider.download_audio(REF, dest, lambda _d, _t: None)
+
+
+def _lowest(provider: PytubefixProvider, dest: Path) -> None:
+    provider.download_video(REF, Resolution.LOWEST, dest, lambda _d, _t: None)
+
+
+def _highest(provider: PytubefixProvider, dest: Path) -> None:
+    provider.download_video(REF, Resolution.HIGHEST, dest, lambda _d, _t: None)
+
+
+@pytest.mark.parametrize("download", [_audio, _lowest, _highest])
+def test_lazy_streams_failure_is_translated(
+    tmp_path: Path, download: Callable[[PytubefixProvider, Path], None]
+) -> None:
+    _FakeYouTube.raise_on_streams = RuntimeError("video unavailable")
+    with pytest.raises(ProviderError, match="video unavailable"):
+        download(PytubefixProvider(), tmp_path)
 
 
 def test_fetch_playlist_parses_video_refs() -> None:

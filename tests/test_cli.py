@@ -187,6 +187,25 @@ def test_batch_size_flag_bounds_concurrency(
     assert youtube.peak_concurrency == 1
 
 
+def test_batch_size_zero_is_rejected_not_defaulted(
+    container: Container, youtube: FakeYouTubeProvider
+) -> None:
+    result = runner.invoke(
+        app, ["download-playlist", "--batch-size", "0", PLAYLIST_URL], obj=container
+    )
+    assert result.exit_code == 1
+    assert "concurrency" in result.output.lower()
+    assert youtube.calls == []
+
+
+def test_empty_bitrate_is_rejected_not_defaulted(container: Container) -> None:
+    result = runner.invoke(
+        app, ["download-video", "--audio-only", "-b", "", VIDEO_URL], obj=container
+    )
+    assert result.exit_code == 1
+    assert "bitrate" in result.output.lower()
+
+
 def test_debug_flag_is_accepted(container: Container) -> None:
     result = runner.invoke(app, ["--debug", "info", VIDEO_URL], obj=container)
     assert result.exit_code == 0, result.output

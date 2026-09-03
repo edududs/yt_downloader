@@ -52,6 +52,7 @@ Source of truth for contracts, rationale and file layout: `docs/plans/2026-09-02
 - AC-07.3 Hook translates `(stream, chunk, bytes_remaining)` → `on_progress(filesize − remaining, filesize)`.
 - AC-07.4 No stream → `StreamUnavailableError`; vendor exception → `ProviderError` with original message.
 - AC-07.5 `fetch_playlist` returns title + `VideoRef`s parsed from `video_urls`.
+- AC-07.6 A vendor exception raised by the lazy `YouTube.streams` property is translated to `ProviderError` on every entry point (audio, lowest, highest). (PR review P1.)
 
 ### REQ-08 Settings + registry (Task 9)
 - AC-08.1 Defaults: output_dir `downloads`, resolution LOWEST, batch_size 10, convert_to_mp3 True, bitrate "128k", ffmpeg_path "ffmpeg", provider "pytubefix".
@@ -83,6 +84,7 @@ Source of truth for contracts, rationale and file layout: `docs/plans/2026-09-02
 - AC-12.4 `download-playlist` default audio+async, prints "N/N"; `--no-async` → peak concurrency 1; partial failure exit 0 listing failed ids; total failure exit 1.
 - AC-12.5 Progress session entered and exited exactly once per command.
 - AC-12.6 Legacy `audio/ commands/ services/` deleted; ruff/pyright legacy excludes removed; GC-1..3 greps empty.
+- AC-12.8 Explicit falsy option values are validated, not defaulted: `--batch-size 0` → exit 1 mentioning concurrency, no download started; `-b ""` → exit 1 mentioning bitrate. (PR review P2.)
 - AC-12.7 Presenter output is encodable on a strict cp1252 console (Windows without UTF-8): `download-video` and `download-playlist` (with one failure) finish with exit 0 and no exception. (Found in manual smoke: `✅` raised UnicodeEncodeError.)
 
 ### REQ-13 Closure (Task 14)

@@ -64,7 +64,15 @@ def _media_spec(
     convert = settings.audio.convert_to_mp3 if convert_to_mp3 is None else convert_to_mp3
     if not convert:
         return AudioDownload(mp3_bitrate=None)
-    return AudioDownload(mp3_bitrate=Bitrate(bitrate or settings.audio.default_bitrate))
+    chosen = settings.audio.default_bitrate if bitrate is None else bitrate
+    return AudioDownload(mp3_bitrate=Bitrate(chosen))
+
+
+def _concurrency(settings: Settings, *, batch_size: int | None, async_mode: bool) -> int:
+    """`--no-async` → 1; otherwise the explicit value (even 0, so the domain rejects it)."""
+    if not async_mode:
+        return 1
+    return settings.download.batch_size if batch_size is None else batch_size
 
 
 @app.command("download-video")
@@ -144,7 +152,7 @@ def download_playlist(
                 bitrate=bitrate,
             ),
             output_dir=output or settings.download.output_dir,
-            concurrency=(batch_size or settings.download.batch_size) if async_mode else 1,
+            concurrency=_concurrency(settings, batch_size=batch_size, async_mode=async_mode),
         )
         with container.progress:
             result = asyncio.run(container.download_playlist.execute(request))
